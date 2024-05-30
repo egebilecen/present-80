@@ -44,16 +44,16 @@ class PRESENT80:
         # User supplied 80 bit key is stored in this register.
         key_reg: int = self._key.as_int()
 
-        # Round 1, 2, 3, ..., self._rounds
-        for i in range(1, self._rounds + 1):
-            # Extract round key.
-            #
-            # Round key is the leftmost 64 bit of the current bits
-            # of the key in register which means we can just shift
-            # it to the right by 16 bits to get 64 bit.
-            round_key: int = key_reg >> 16
-            round_keys.append(round_key)
+        # Extract round key.
+        #
+        # Round key is the leftmost 64 bit of the current bits
+        # of the key in register which means we can just shift
+        # it to the right by 16 bits to get 64 bit.
+        round_keys.append(key_reg >> 16)
 
+        # Round 1, 2, 3, ..., self._rounds - 1, i.e., we will loop
+        # for 31 times in case of self._rounds == 32.
+        for i in range(1, self._rounds):
             # Update key register.
             #
             # Key register is rotated to left by 61 bit positions
@@ -68,6 +68,9 @@ class PRESENT80:
             # The 5 bits at bit location 19, 18, 17, 16, 15 of the key in the register
             # are XORed with the 5-bit round_counter value i.
             key_reg = key_reg ^ (i << 15)
+
+            # Extract round key.
+            round_keys.append(key_reg >> 16)
 
         return round_keys
     
